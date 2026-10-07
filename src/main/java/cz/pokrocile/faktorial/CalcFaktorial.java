@@ -25,7 +25,10 @@ public final class CalcFaktorial {
      *         nebo {@code c > MAX_VSTUP}
      */
     public static long calc1(int c) {
-        return 0; // TODO: zatím invalidní hodnota
+        if (!jePlatnyVstup(c)) {
+            return CHYBA;
+        }
+        return vypocet(c);
     }
 
     /**
@@ -36,6 +39,34 @@ public final class CalcFaktorial {
      * @throws FaktorialException pokud je {@code c < 0} nebo {@code c > MAX_VSTUP}
      */
     public static long calc2(int c) throws FaktorialException {
-        return 0; // TODO: zatím invalidní hodnota
+        if (c < 0) {
+            throw new FaktorialException("Faktoriál záporného čísla není definován: " + c, c);
+        }
+        if (c > MAX_VSTUP) {
+            throw new FaktorialException("Faktoriál " + c + " přesahuje rozsah typu long", c);
+        }
+        return vypocet(c);
+    }
+
+    /**
+     * @param c vstupní číslo
+     * @return {@code true}, pokud {@code 0 <= c <= MAX_VSTUP}
+     */
+    private static boolean jePlatnyVstup(int c) {
+        return c >= 0 && c <= MAX_VSTUP;
+    }
+
+    /**
+     * Vlastní výpočet {@code c!} pro již ověřený vstup (iterativně, 0! = 1).
+     *
+     * @param c platný vstup
+     * @return {@code c!}
+     */
+    private static long vypocet(int c) {
+        long vysledek = 1;
+        for (int i = 2; i <= c; i++) {
+            vysledek *= i;
+        }
+        return vysledek;
     }
 }

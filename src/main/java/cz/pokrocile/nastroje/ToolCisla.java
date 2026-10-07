@@ -17,6 +17,13 @@ public final class ToolCisla {
      *         {@code 0} pokud jsou si údaje rovny
      */
     public static int compare_int(int a, int b) {
-        return Integer.MIN_VALUE; // TODO: zatím invalidní hodnota
+        // Záměrně se nepoužívá "a - b", které by pro krajní hodnoty přeteklo.
+        if (a < b) {
+            return -1;
+        }
+        if (a > b) {
+            return 1;
+        }
+        return 0;
     }
 }

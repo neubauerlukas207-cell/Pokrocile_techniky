@@ -13,18 +13,28 @@ public class BankovniUcetNastaveni implements OvereniLimitu {
      * @throws IllegalArgumentException pokud je limit záporný
      */
     public BankovniUcetNastaveni(int denniLimit) {
-        // TODO
+        if (denniLimit < 0) {
+            throw new IllegalArgumentException("Denní limit nesmí být záporný: " + denniLimit);
+        }
+        this.denniLimit = denniLimit;
     }
 
     /**
      * @return maximální denní limit pro výběr
      */
     public int getDenniLimit() {
-        return -1; // TODO: zatím invalidní hodnota
+        return denniLimit;
     }
 
     @Override
     public boolean verifyDenniLimit(int castka, int[] historieVyberu) {
-        return false; // TODO
+        // součet v long, aby nedošlo k přetečení int
+        long soucet = castka;
+        if (historieVyberu != null) {
+            for (int vyber : historieVyberu) {
+                soucet += vyber;
+            }
+        }
+        return soucet <= denniLimit;
     }
 }
