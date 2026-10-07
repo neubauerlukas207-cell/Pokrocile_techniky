@@ -32,10 +32,9 @@ class BankovniUcetNastaveniTest {
 
     @Test
     void bezHistorie() {
-        OvereniLimitu overeni = nastaveni;
-        assertTrue(overeni.verifyDenniLimit(500, new int[0]));
-        assertTrue(overeni.verifyDenniLimit(1000, new int[0]));
-        assertFalse(overeni.verifyDenniLimit(1001, new int[0]));
+        assertTrue(nastaveni.verifyDenniLimit(500, new int[0]));
+        assertTrue(nastaveni.verifyDenniLimit(1000, new int[0]));
+        assertFalse(nastaveni.verifyDenniLimit(1001, new int[0]));
     }
 
     @Test

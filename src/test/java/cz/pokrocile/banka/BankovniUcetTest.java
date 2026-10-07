@@ -4,12 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,40 +16,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class BankovniUcetTest {
 
-    private static final ZoneId ZONA = ZoneOffset.UTC;
-    private static final Instant START = Instant.parse("2026-10-07T10:00:00Z");
+    private static final LocalDateTime START = LocalDateTime.of(2026, 10, 7, 10, 0);
 
-    /** Nastavitelné hodiny pro simulaci přechodu na další den. */
-    private static class TestHodiny extends Clock {
-        private Instant ted = START;
-
-        void posun(Duration d) {
-            ted = ted.plus(d);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZONA;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return ted;
-        }
-    }
-
-    private TestHodiny hodiny;
+    /** Simulovaný aktuální čas – umožňuje otestovat přechod na další den. */
+    private LocalDateTime ted;
     private IBankovniUcet ucet;
 
     @BeforeEach
     void setUp() {
-        hodiny = new TestHodiny();
-        ucet = new BankovniUcet("123456789/0100", new BankovniUcetNastaveni(1000), hodiny);
+        ted = START;
+        ucet = new BankovniUcet("123456789/0100", new BankovniUcetNastaveni(1000)) {
+            @Override
+            protected LocalDateTime ted() {
+                return ted;
+            }
+        };
     }
 
     @Test
@@ -84,7 +60,7 @@ class BankovniUcetTest {
         assertEquals(2, h.length);
         assertEquals(500, h[0].getKolik());
         assertEquals(250, h[1].getKolik());
-        assertEquals(LocalDateTime.ofInstant(START, ZONA), h[0].getDatum());
+        assertEquals(START, h[0].getDatum());
         assertEquals(0, ucet.getHistorieVyberu().length);
     }
 
@@ -107,7 +83,7 @@ class BankovniUcetTest {
         Vyber[] h = ucet.getHistorieVyberu();
         assertEquals(1, h.length);
         assertEquals(300, h[0].getKolik());
-        assertEquals(LocalDateTime.ofInstant(START, ZONA), h[0].getDatum());
+        assertEquals(START, h[0].getDatum());
     }
 
     @Test
@@ -119,12 +95,10 @@ class BankovniUcetTest {
     }
 
     @Test
-    @DisplayName("Nedostatek prostředků – výjimka s typem NEDOSTATEK_PROSTREDKU, stav beze změny")
+    @DisplayName("Nedostatek prostředků – NedostatekProstredkuException, stav beze změny")
     void vyberNedostatek() {
         ucet.vklad(100);
-        NedostatekProstredkuException ex =
-                assertThrows(NedostatekProstredkuException.class, () -> ucet.vyber(101));
-        assertEquals(TypChyby.NEDOSTATEK_PROSTREDKU, ex.getTypChyby());
+        assertThrows(NedostatekProstredkuException.class, () -> ucet.vyber(101));
         assertEquals(100, ucet.getAktualniStav());
         assertEquals(0, ucet.getHistorieVyberu().length);
     }
@@ -133,9 +107,7 @@ class BankovniUcetTest {
     @DisplayName("Překročení denního limitu jedním výběrem")
     void vyberPresLimitNajednou() {
         ucet.vklad(5000);
-        PrekrocenLimitException ex =
-                assertThrows(PrekrocenLimitException.class, () -> ucet.vyber(1001));
-        assertEquals(TypChyby.PREKROCEN_DENNI_LIMIT, ex.getTypChyby());
+        assertThrows(PrekrocenLimitException.class, () -> ucet.vyber(1001));
         assertEquals(5000, ucet.getAktualniStav());
         assertEquals(0, ucet.getHistorieVyberu().length);
     }
@@ -158,22 +130,20 @@ class BankovniUcetTest {
         ucet.vyber(1000);
         assertThrows(PrekrocenLimitException.class, () -> ucet.vyber(1));
 
-        hodiny.posun(Duration.ofDays(1));
+        ted = ted.plusDays(1);
         ucet.vyber(1000);
         assertEquals(3000, ucet.getAktualniStav());
         assertEquals(2, ucet.getHistorieVyberu().length);
     }
 
     @Test
-    @DisplayName("Typ chyby lze zjistit přes společného předka BankovniUcetException")
-    void typChybyPresPredka() {
+    @DisplayName("Typ chybového stavu je rozlišen třídou výjimky")
+    void typChyby() {
         ucet.vklad(50);
-        BankovniUcetException ex = assertThrows(BankovniUcetException.class, () -> ucet.vyber(100));
-        assertEquals(TypChyby.NEDOSTATEK_PROSTREDKU, ex.getTypChyby());
+        assertThrows(NedostatekProstredkuException.class, () -> ucet.vyber(100));
 
         ucet.vklad(5000);
-        ex = assertThrows(BankovniUcetException.class, () -> ucet.vyber(2000));
-        assertEquals(TypChyby.PREKROCEN_DENNI_LIMIT, ex.getTypChyby());
+        assertThrows(PrekrocenLimitException.class, () -> ucet.vyber(2000));
     }
 
     @Test
@@ -212,12 +182,22 @@ class BankovniUcetTest {
     // ---------------- Vklad / Vyber ----------------
 
     @Test
-    void transakceValidace() {
+    void vkladZaznam() {
         LocalDateTime d = LocalDateTime.of(2026, 1, 1, 12, 0);
         Vklad v = new Vklad(d, 10);
         assertEquals(d, v.getDatum());
         assertEquals(10, v.getKolik());
-        assertThrows(IllegalArgumentException.class, () -> new Vyber(d, 0));
+        assertThrows(IllegalArgumentException.class, () -> new Vklad(d, 0));
         assertThrows(NullPointerException.class, () -> new Vklad(null, 10));
+    }
+
+    @Test
+    void vyberZaznam() {
+        LocalDateTime d = LocalDateTime.of(2026, 1, 1, 12, 0);
+        Vyber v = new Vyber(d, 20);
+        assertEquals(d, v.getDatum());
+        assertEquals(20, v.getKolik());
+        assertThrows(IllegalArgumentException.class, () -> new Vyber(d, -1));
+        assertThrows(NullPointerException.class, () -> new Vyber(null, 20));
     }
 }

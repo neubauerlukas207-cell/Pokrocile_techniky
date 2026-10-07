@@ -1,6 +1,5 @@
 package cz.pokrocile.banka;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,35 +17,21 @@ public class BankovniUcet implements IBankovniUcet {
     protected int aktualniStav;
     /** Nastavení účtu (denní limit). */
     protected BankovniUcetNastaveni nastaveni;
-    /** Hodiny, podle kterých se určuje datum transakcí (kvůli testovatelnosti). */
-    protected Clock hodiny;
     /** Historie vkladů (od nejstaršího). */
     protected final List<Vklad> historieVkladu = new ArrayList<>();
     /** Historie výběrů (od nejstaršího). */
     protected final List<Vyber> historieVyberu = new ArrayList<>();
 
     /**
-     * Vytvoří účet s nulovým zůstatkem, používá systémové hodiny.
+     * Vytvoří účet s nulovým zůstatkem.
      *
      * @param cisloUctu číslo účtu
      * @param nastaveni nastavení účtu
-     */
-    public BankovniUcet(String cisloUctu, BankovniUcetNastaveni nastaveni) {
-        this(cisloUctu, nastaveni, Clock.systemDefaultZone());
-    }
-
-    /**
-     * Vytvoří účet s nulovým zůstatkem a zadanými hodinami.
-     *
-     * @param cisloUctu číslo účtu
-     * @param nastaveni nastavení účtu
-     * @param hodiny    zdroj aktuálního času
      * @throws NullPointerException pokud je některý parametr {@code null}
      */
-    public BankovniUcet(String cisloUctu, BankovniUcetNastaveni nastaveni, Clock hodiny) {
+    public BankovniUcet(String cisloUctu, BankovniUcetNastaveni nastaveni) {
         this.cisloUctu = Objects.requireNonNull(cisloUctu, "cisloUctu");
         this.nastaveni = Objects.requireNonNull(nastaveni, "nastaveni");
-        this.hodiny = Objects.requireNonNull(hodiny, "hodiny");
         this.aktualniStav = 0;
     }
 
@@ -60,18 +45,11 @@ public class BankovniUcet implements IBankovniUcet {
         return aktualniStav;
     }
 
-    /**
-     * @return nastavení účtu
-     */
-    public BankovniUcetNastaveni getNastaveni() {
-        return nastaveni;
-    }
-
     @Override
     public void vklad(int castka) {
         overKladnou(castka);
         aktualniStav = Math.addExact(aktualniStav, castka);
-        historieVkladu.add(new Vklad(LocalDateTime.now(hodiny), castka));
+        historieVkladu.add(new Vklad(ted(), castka));
     }
 
     @Override
@@ -81,13 +59,23 @@ public class BankovniUcet implements IBankovniUcet {
             throw new NedostatekProstredkuException(
                     "Nedostatek prostředků: požadováno " + castka + ", zůstatek " + aktualniStav);
         }
-        LocalDateTime ted = LocalDateTime.now(hodiny);
+        LocalDateTime ted = ted();
         if (!nastaveni.verifyDenniLimit(castka, dnesniVybery(ted.toLocalDate()))) {
             throw new PrekrocenLimitException(
                     "Překročen denní limit " + nastaveni.getDenniLimit() + " při výběru " + castka);
         }
         aktualniStav -= castka;
         historieVyberu.add(new Vyber(ted, castka));
+    }
+
+    /**
+     * Aktuální datum a čas transakce. Metoda je {@code protected}, aby ji
+     * testy mohly překrýt a simulovat přechod na další den.
+     *
+     * @return aktuální datum a čas
+     */
+    protected LocalDateTime ted() {
+        return LocalDateTime.now();
     }
 
     /**

@@ -3,16 +3,17 @@ package cz.pokrocile.faktorial;
 /**
  * Výpočet faktoriálu.
  * <p>
- * Java nemá typ {@code unsigned int}, proto se vrací {@code long}.
- * Největší vstup, jehož faktoriál se do {@code long} vejde, je {@value #MAX_VSTUP}.
+ * Java nemá typ {@code unsigned int}, proto se vrací {@code int}
+ * (výsledek je vždy nezáporný, záporná hodnota značí jen chybu).
+ * Největší vstup, jehož faktoriál se do {@code int} vejde, je {@value #MAX_VSTUP}.
  */
 public final class CalcFaktorial {
 
-    /** Nejvyšší vstup, pro který výsledek nepřeteče rozsah {@code long}. */
-    public static final int MAX_VSTUP = 20;
+    /** Nejvyšší vstup, pro který výsledek nepřeteče rozsah {@code int} (12! = 479001600). */
+    public static final int MAX_VSTUP = 12;
 
     /** Návratová hodnota {@link #calc1(int)} pro neplatný vstup. */
-    public static final long CHYBA = -1;
+    public static final int CHYBA = -1;
 
     private CalcFaktorial() {
     }
@@ -24,7 +25,7 @@ public final class CalcFaktorial {
      * @return {@code c!}, nebo {@link #CHYBA} ({@code -1}) pokud je {@code c < 0}
      *         nebo {@code c > MAX_VSTUP}
      */
-    public static long calc1(int c) {
+    public static int calc1(int c) {
         if (!jePlatnyVstup(c)) {
             return CHYBA;
         }
@@ -38,12 +39,12 @@ public final class CalcFaktorial {
      * @return {@code c!}
      * @throws FaktorialException pokud je {@code c < 0} nebo {@code c > MAX_VSTUP}
      */
-    public static long calc2(int c) throws FaktorialException {
+    public static int calc2(int c) throws FaktorialException {
         if (c < 0) {
             throw new FaktorialException("Faktoriál záporného čísla není definován: " + c, c);
         }
         if (c > MAX_VSTUP) {
-            throw new FaktorialException("Faktoriál " + c + " přesahuje rozsah typu long", c);
+            throw new FaktorialException("Faktoriál " + c + " přesahuje rozsah typu int", c);
         }
         return vypocet(c);
     }
@@ -62,8 +63,8 @@ public final class CalcFaktorial {
      * @param c platný vstup
      * @return {@code c!}
      */
-    private static long vypocet(int c) {
-        long vysledek = 1;
+    private static int vypocet(int c) {
+        int vysledek = 1;
         for (int i = 2; i <= c; i++) {
             vysledek *= i;
         }

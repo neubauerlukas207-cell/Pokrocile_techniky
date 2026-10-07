@@ -2,7 +2,7 @@ package cz.pokrocile.faktorial;
 
 /**
  * Výjimka generovaná při výpočtu faktoriálu z neplatného vstupu
- * (záporné číslo nebo číslo, jehož faktoriál přeteče rozsah typu {@code long}).
+ * (záporné číslo nebo číslo, jehož faktoriál přeteče rozsah typu {@code int}).
  */
 public class FaktorialException extends Exception {
 

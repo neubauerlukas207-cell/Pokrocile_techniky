@@ -1,9 +1,10 @@
 package cz.pokrocile;
 
 import cz.pokrocile.banka.BankovniUcet;
-import cz.pokrocile.banka.BankovniUcetException;
 import cz.pokrocile.banka.BankovniUcetNastaveni;
 import cz.pokrocile.banka.IBankovniUcet;
+import cz.pokrocile.banka.NedostatekProstredkuException;
+import cz.pokrocile.banka.PrekrocenLimitException;
 import cz.pokrocile.banka.Vyber;
 import cz.pokrocile.faktorial.CalcFaktorial;
 import cz.pokrocile.faktorial.FaktorialException;
@@ -66,8 +67,10 @@ public final class Main {
             try {
                 ucet.vyber(castka);
                 System.out.println("vyber " + castka + " OK, zustatek " + ucet.getAktualniStav());
-            } catch (BankovniUcetException e) {
-                System.out.println("vyber " + castka + " ZAMITNUT [" + e.getTypChyby() + "]: " + e.getMessage());
+            } catch (NedostatekProstredkuException e) {
+                System.out.println("vyber " + castka + " ZAMITNUT [nedostatek prostredku]: " + e.getMessage());
+            } catch (PrekrocenLimitException e) {
+                System.out.println("vyber " + castka + " ZAMITNUT [prekrocen denni limit]: " + e.getMessage());
             }
         }
         System.out.println("vklady: " + ucet.getHistorieVkladu().length + ", vybery: " + ucet.getHistorieVyberu().length);

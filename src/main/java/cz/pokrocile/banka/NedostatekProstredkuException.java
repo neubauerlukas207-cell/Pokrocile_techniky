@@ -1,14 +1,15 @@
 package cz.pokrocile.banka;
 
 /**
- * Výjimka generovaná při pokusu vybrat více, než je aktuální zůstatek účtu.
+ * Vlastní výjimka – chybový stav „nedostatek finančních prostředků“.
+ * Generuje se při pokusu vybrat více, než je aktuální zůstatek účtu.
  */
-public class NedostatekProstredkuException extends BankovniUcetException {
+public class NedostatekProstredkuException extends Exception {
 
     /**
      * @param zprava popis chyby
      */
     public NedostatekProstredkuException(String zprava) {
-        super(zprava, TypChyby.NEDOSTATEK_PROSTREDKU);
+        super(zprava);
     }
 }

@@ -17,13 +17,13 @@ class CalcFaktorialTest {
     // ---------------- calc1: chyba návratovou hodnotou ----------------
 
     @ParameterizedTest(name = "calc1({0}) = {1}")
-    @CsvSource({"0,1", "1,1", "2,2", "3,6", "5,120", "10,3628800", "20,2432902008176640000"})
-    void calc1PlatnyVstup(int vstup, long ocekavano) {
+    @CsvSource({"0,1", "1,1", "2,2", "3,6", "4,24", "5,120", "10,3628800", "12,479001600"})
+    void calc1PlatnyVstup(int vstup, int ocekavano) {
         assertEquals(ocekavano, CalcFaktorial.calc1(vstup));
     }
 
     @ParameterizedTest(name = "calc1({0}) = -1")
-    @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 21, 100, Integer.MAX_VALUE})
+    @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 13, 100, Integer.MAX_VALUE})
     void calc1NeplatnyVstup(int vstup) {
         assertEquals(CalcFaktorial.CHYBA, CalcFaktorial.calc1(vstup));
         assertEquals(-1, CalcFaktorial.calc1(vstup));
@@ -40,13 +40,13 @@ class CalcFaktorialTest {
     // ---------------- calc2: chyba výjimkou ----------------
 
     @ParameterizedTest(name = "calc2({0}) = {1}")
-    @CsvSource({"0,1", "1,1", "2,2", "3,6", "5,120", "10,3628800", "20,2432902008176640000"})
-    void calc2PlatnyVstup(int vstup, long ocekavano) throws FaktorialException {
+    @CsvSource({"0,1", "1,1", "2,2", "3,6", "4,24", "5,120", "10,3628800", "12,479001600"})
+    void calc2PlatnyVstup(int vstup, int ocekavano) throws FaktorialException {
         assertEquals(ocekavano, CalcFaktorial.calc2(vstup));
     }
 
     @ParameterizedTest(name = "calc2({0}) vyhodí FaktorialException")
-    @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 21, 100, Integer.MAX_VALUE})
+    @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 13, 100, Integer.MAX_VALUE})
     void calc2NeplatnyVstup(int vstup) {
         FaktorialException ex = assertThrows(FaktorialException.class, () -> CalcFaktorial.calc2(vstup));
         assertEquals(vstup, ex.getVstup());
