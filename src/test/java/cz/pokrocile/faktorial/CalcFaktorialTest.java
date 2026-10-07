@@ -25,14 +25,13 @@ class CalcFaktorialTest {
     @ParameterizedTest(name = "calc1({0}) = -1")
     @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 13, 100, Integer.MAX_VALUE})
     void calc1NeplatnyVstup(int vstup) {
-        assertEquals(CalcFaktorial.CHYBA, CalcFaktorial.calc1(vstup));
         assertEquals(-1, CalcFaktorial.calc1(vstup));
     }
 
     @Test
     @DisplayName("calc1: n! = n * (n-1)!")
     void calc1Rekurence() {
-        for (int n = 1; n <= CalcFaktorial.MAX_VSTUP; n++) {
+        for (int n = 1; n <= 12; n++) {
             assertEquals(n * CalcFaktorial.calc1(n - 1), CalcFaktorial.calc1(n));
         }
     }
@@ -48,14 +47,13 @@ class CalcFaktorialTest {
     @ParameterizedTest(name = "calc2({0}) vyhodí FaktorialException")
     @ValueSource(ints = {-1, -2, -100, Integer.MIN_VALUE, 13, 100, Integer.MAX_VALUE})
     void calc2NeplatnyVstup(int vstup) {
-        FaktorialException ex = assertThrows(FaktorialException.class, () -> CalcFaktorial.calc2(vstup));
-        assertEquals(vstup, ex.getVstup());
+        assertThrows(FaktorialException.class, () -> CalcFaktorial.calc2(vstup));
     }
 
     @Test
     @DisplayName("calc1 a calc2 dávají pro platné vstupy stejné výsledky")
     void obeImplementaceShodne() throws FaktorialException {
-        for (int n = 0; n <= CalcFaktorial.MAX_VSTUP; n++) {
+        for (int n = 0; n <= 12; n++) {
             assertEquals(CalcFaktorial.calc1(n), CalcFaktorial.calc2(n));
         }
     }

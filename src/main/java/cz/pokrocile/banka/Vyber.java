@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Záznam o výběru z účtu (neměnný objekt).
+ * Záznam o výběru z účtu.
  */
 public class Vyber {
 
@@ -39,10 +39,5 @@ public class Vyber {
      */
     public int getKolik() {
         return kolik;
-    }
-
-    @Override
-    public String toString() {
-        return "Vyber[" + datum + ", " + kolik + "]";
     }
 }

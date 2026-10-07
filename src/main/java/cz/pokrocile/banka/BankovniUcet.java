@@ -7,20 +7,21 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Bankovní účet s historií vkladů a výběrů a s denním limitem pro výběr.
+ * Bankovní účet s číslem účtu, aktuálním zůstatkem, historií vkladů a výběrů
+ * a s maximálním denním limitem pro výběr.
  */
-public class BankovniUcet implements IBankovniUcet {
+public class BankovniUcet {
 
     /** Číslo účtu. */
     protected String cisloUctu;
     /** Aktuální zůstatek. */
     protected int aktualniStav;
-    /** Nastavení účtu (denní limit). */
+    /** Nastavení účtu (denní limit pro výběr). */
     protected BankovniUcetNastaveni nastaveni;
     /** Historie vkladů (od nejstaršího). */
-    protected final List<Vklad> historieVkladu = new ArrayList<>();
+    protected List<Vklad> historieVkladu = new ArrayList<>();
     /** Historie výběrů (od nejstaršího). */
-    protected final List<Vyber> historieVyberu = new ArrayList<>();
+    protected List<Vyber> historieVyberu = new ArrayList<>();
 
     /**
      * Vytvoří účet s nulovým zůstatkem.
@@ -35,32 +36,35 @@ public class BankovniUcet implements IBankovniUcet {
         this.aktualniStav = 0;
     }
 
-    @Override
-    public String getCisloUctu() {
-        return cisloUctu;
-    }
-
-    @Override
-    public int getAktualniStav() {
-        return aktualniStav;
-    }
-
-    @Override
+    /**
+     * Vloží částku na účet a zaznamená vklad do historie.
+     *
+     * @param castka vkládaná částka (&gt; 0)
+     * @throws IllegalArgumentException pokud částka není kladná
+     */
     public void vklad(int castka) {
         overKladnou(castka);
         aktualniStav = Math.addExact(aktualniStav, castka);
-        historieVkladu.add(new Vklad(ted(), castka));
+        historieVkladu.add(new Vklad(LocalDateTime.now(), castka));
     }
 
-    @Override
+    /**
+     * Vybere částku z účtu a zaznamená výběr do historie.
+     * Při chybě se zůstatek ani historie nemění.
+     *
+     * @param castka vybíraná částka (&gt; 0)
+     * @throws NedostatekProstredkuException pokud je částka vyšší než aktuální zůstatek
+     * @throws PrekrocenLimitException       pokud by byl překročen denní limit pro výběr
+     * @throws IllegalArgumentException      pokud částka není kladná
+     */
     public void vyber(int castka) throws NedostatekProstredkuException, PrekrocenLimitException {
         overKladnou(castka);
         if (castka > aktualniStav) {
             throw new NedostatekProstredkuException(
                     "Nedostatek prostředků: požadováno " + castka + ", zůstatek " + aktualniStav);
         }
-        LocalDateTime ted = ted();
-        if (!nastaveni.verifyDenniLimit(castka, dnesniVybery(ted.toLocalDate()))) {
+        LocalDateTime ted = LocalDateTime.now();
+        if (!nastaveni.verifyDenniLimit(castka, vyberyZeDne(ted.toLocalDate()))) {
             throw new PrekrocenLimitException(
                     "Překročen denní limit " + nastaveni.getDenniLimit() + " při výběru " + castka);
         }
@@ -69,20 +73,24 @@ public class BankovniUcet implements IBankovniUcet {
     }
 
     /**
-     * Aktuální datum a čas transakce. Metoda je {@code protected}, aby ji
-     * testy mohly překrýt a simulovat přechod na další den.
-     *
-     * @return aktuální datum a čas
+     * @return historie vkladů (kopie, od nejstaršího)
      */
-    protected LocalDateTime ted() {
-        return LocalDateTime.now();
+    public Vklad[] getHistorieVkladu() {
+        return historieVkladu.toArray(new Vklad[0]);
+    }
+
+    /**
+     * @return historie výběrů (kopie, od nejstaršího)
+     */
+    public Vyber[] getHistorieVyberu() {
+        return historieVyberu.toArray(new Vyber[0]);
     }
 
     /**
      * @param den den, pro který se výběry hledají
      * @return částky všech výběrů provedených v zadaný den
      */
-    protected int[] dnesniVybery(LocalDate den) {
+    private int[] vyberyZeDne(LocalDate den) {
         return historieVyberu.stream()
                 .filter(v -> v.getDatum().toLocalDate().equals(den))
                 .mapToInt(Vyber::getKolik)
@@ -97,15 +105,5 @@ public class BankovniUcet implements IBankovniUcet {
         if (castka <= 0) {
             throw new IllegalArgumentException("Částka musí být kladná: " + castka);
         }
-    }
-
-    @Override
-    public Vklad[] getHistorieVkladu() {
-        return historieVkladu.toArray(new Vklad[0]);
-    }
-
-    @Override
-    public Vyber[] getHistorieVyberu() {
-        return historieVyberu.toArray(new Vyber[0]);
     }
 }

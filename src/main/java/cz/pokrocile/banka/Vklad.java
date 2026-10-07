@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Záznam o vkladu na účet (neměnný objekt).
+ * Záznam o vkladu na účet.
  */
 public class Vklad {
 
@@ -39,10 +39,5 @@ public class Vklad {
      */
     public int getKolik() {
         return kolik;
-    }
-
-    @Override
-    public String toString() {
-        return "Vklad[" + datum + ", " + kolik + "]";
     }
 }

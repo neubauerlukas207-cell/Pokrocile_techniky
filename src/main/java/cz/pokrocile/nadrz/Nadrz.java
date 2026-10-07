@@ -1,13 +1,14 @@
 package cz.pokrocile.nadrz;
 
 /**
- * Nádrž s celočíselnou kapacitou a stavem.
+ * Nádrž s kapacitou a aktuálním stavem.
+ * Stav nádrže je vždy v rozsahu 0 až kapacita.
  */
-public class Nadrz implements INadrz {
+public class Nadrz {
 
     /** Maximální kapacita nádrže. */
     protected int kapacita;
-    /** Aktuální množství v nádrži. */
+    /** Aktuální stav (množství v nádrži). */
     protected int stav;
 
     /**
@@ -24,7 +25,13 @@ public class Nadrz implements INadrz {
         this.stav = 0;
     }
 
-    @Override
+    /**
+     * Přidá do nádrže zadané množství.
+     *
+     * @param mnozstvi přidávané množství (&gt;= 0)
+     * @throws PlnaNadrzException       pokud by byla překročena kapacita (stav se nezmění)
+     * @throws IllegalArgumentException pokud je množství záporné
+     */
     public void pridej(int mnozstvi) throws PlnaNadrzException {
         overNezaporne(mnozstvi);
         // porovnání s volným místem místo "stav + mnozstvi" – nehrozí přetečení int
@@ -34,7 +41,13 @@ public class Nadrz implements INadrz {
         stav += mnozstvi;
     }
 
-    @Override
+    /**
+     * Odebere z nádrže zadané množství.
+     *
+     * @param mnozstvi odebírané množství (&gt;= 0)
+     * @throws PrazdnaNadrzException    pokud v nádrži není dostatek obsahu (stav se nezmění)
+     * @throws IllegalArgumentException pokud je množství záporné
+     */
     public void odeber(int mnozstvi) throws PrazdnaNadrzException {
         overNezaporne(mnozstvi);
         if (mnozstvi > stav) {
@@ -43,12 +56,16 @@ public class Nadrz implements INadrz {
         stav -= mnozstvi;
     }
 
-    @Override
+    /**
+     * @return aktuální stav nádrže
+     */
     public int getStav() {
         return stav;
     }
 
-    @Override
+    /**
+     * @return kapacita nádrže
+     */
     public int getKapacita() {
         return kapacita;
     }
@@ -61,10 +78,5 @@ public class Nadrz implements INadrz {
         if (mnozstvi < 0) {
             throw new IllegalArgumentException("Množství nesmí být záporné: " + mnozstvi);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Nadrz[" + stav + "/" + kapacita + "]";
     }
 }

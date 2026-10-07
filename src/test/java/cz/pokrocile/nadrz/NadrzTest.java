@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Testy nádrže – testuje se proti rozhraní {@link INadrz}.
+ * Testy třídy {@link Nadrz}.
  */
 class NadrzTest {
 
-    private INadrz nadrz;
+    private Nadrz nadrz;
 
     @BeforeEach
     void setUp() {
@@ -128,7 +128,7 @@ class NadrzTest {
     @Test
     @DisplayName("Nádrž s nulovou kapacitou")
     void nulovaKapacita() {
-        INadrz n = new Nadrz(0);
+        Nadrz n = new Nadrz(0);
         assertEquals(0, n.getKapacita());
         assertDoesNotThrow(() -> n.pridej(0));
         assertThrows(PlnaNadrzException.class, () -> n.pridej(1));

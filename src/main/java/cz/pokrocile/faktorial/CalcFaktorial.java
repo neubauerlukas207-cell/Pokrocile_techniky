@@ -1,66 +1,53 @@
 package cz.pokrocile.faktorial;
 
 /**
- * Výpočet faktoriálu.
+ * Výpočet faktoriálu: 0! = 1, 1! = 1, n! = n * (n - 1)!.
  * <p>
- * Java nemá typ {@code unsigned int}, proto se vrací {@code int}
- * (výsledek je vždy nezáporný, záporná hodnota značí jen chybu).
- * Největší vstup, jehož faktoriál se do {@code int} vejde, je {@value #MAX_VSTUP}.
+ * Java nemá typ {@code unsigned int}, proto metody vracejí {@code int}.
+ * Faktoriál čísla většího než 12 se do typu {@code int} nevejde,
+ * proto je takové číslo také chybným vstupem.
  */
 public final class CalcFaktorial {
-
-    /** Nejvyšší vstup, pro který výsledek nepřeteče rozsah {@code int} (12! = 479001600). */
-    public static final int MAX_VSTUP = 12;
-
-    /** Návratová hodnota {@link #calc1(int)} pro neplatný vstup. */
-    public static final int CHYBA = -1;
 
     private CalcFaktorial() {
     }
 
     /**
-     * Vypočte faktoriál; chybu signalizuje návratovou hodnotou.
+     * První implementace – chybu signalizuje návratovou hodnotou.
      *
      * @param c vstupní číslo
-     * @return {@code c!}, nebo {@link #CHYBA} ({@code -1}) pokud je {@code c < 0}
-     *         nebo {@code c > MAX_VSTUP}
+     * @return {@code c!}, nebo {@code -1} v případě chybného vstupního čísla
+     *         ({@code c < 0} nebo {@code c > 12})
      */
     public static int calc1(int c) {
-        if (!jePlatnyVstup(c)) {
-            return CHYBA;
+        if (c < 0 || c > 12) {
+            return -1;
         }
         return vypocet(c);
     }
 
     /**
-     * Vypočte faktoriál; chybu signalizuje výjimkou.
+     * Druhá implementace – chybu signalizuje výjimkou.
      *
      * @param c vstupní číslo
      * @return {@code c!}
-     * @throws FaktorialException pokud je {@code c < 0} nebo {@code c > MAX_VSTUP}
+     * @throws FaktorialException v případě chybného vstupního čísla
+     *                            ({@code c < 0} nebo {@code c > 12})
      */
     public static int calc2(int c) throws FaktorialException {
         if (c < 0) {
-            throw new FaktorialException("Faktoriál záporného čísla není definován: " + c, c);
+            throw new FaktorialException("Faktoriál záporného čísla není definován: " + c);
         }
-        if (c > MAX_VSTUP) {
-            throw new FaktorialException("Faktoriál " + c + " přesahuje rozsah typu int", c);
+        if (c > 12) {
+            throw new FaktorialException("Faktoriál čísla " + c + " přesahuje rozsah typu int");
         }
         return vypocet(c);
     }
 
     /**
-     * @param c vstupní číslo
-     * @return {@code true}, pokud {@code 0 <= c <= MAX_VSTUP}
-     */
-    private static boolean jePlatnyVstup(int c) {
-        return c >= 0 && c <= MAX_VSTUP;
-    }
-
-    /**
-     * Vlastní výpočet {@code c!} pro již ověřený vstup (iterativně, 0! = 1).
+     * Vlastní výpočet faktoriálu pro již ověřený vstup.
      *
-     * @param c platný vstup
+     * @param c vstupní číslo (0 až 12)
      * @return {@code c!}
      */
     private static int vypocet(int c) {
